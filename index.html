@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anime Tracker - AniList</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/lucaburgio/iconoir@main/css/iconoir.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="min-h-screen">
+      <!-- Side Menu for Portrait -->
+      <div
+        id="sideMenu"
+        class="fixed inset-y-0 left-0 w-66 bg-background border-r z-[70] transform -translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] backdrop-blur-3xl bg-opacity-95"
+      >
+        <div class="p-6 space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div
+                class="h-8 bg-foreground rounded-lg flex items-center justify-center"
+              >
+                <i
+                  class="iconoir-nav-arrow-right text-background text-lg font-bold"
+                ></i>
+              </div>
+              <h1 class="text-lg font-bold tracking-tight">AnTrack</h1>
+            </div>
+            <button
+              onclick="toggleSideMenu()"
+              class="cn-button-ghost h-8 p-1.5 rounded-full justify-center items-center"
+            >
+              <i class="iconoir-xmark text-lg h-full"></i>
+            </button>
+          </div>
+
+          <nav class="space-y-2">
+            <button
+              onclick="switchPortraitTab('home')"
+              id="portraitHomeBtn"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-accent text-foreground transition-all"
+            >
+              <i class="iconoir-home text-lg"></i>
+              <span class="font-semibold text-sm">Home</span>
+            </button>
+            <button
+              onclick="switchPortraitTab('search')"
+              id="portraitSearchBtn"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted transition-all"
+            >
+              <i class="iconoir-search text-lg"></i>
+              <span class="font-semibold text-sm">Search</span>
+            </button>
+            <button
+              onclick="showMyList(); toggleSideMenu();"
+              class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted transition-all"
+            >
+              <i class="iconoir-bookmark text-lg"></i>
+              <span class="font-semibold text-sm">My List</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+      <div
+        id="sideMenuOverlay"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[65] hidden opacity-0 transition-opacity duration-500"
+        onclick="toggleSideMenu()"
+      ></div>
+
+      <!-- Header -->
+      <header
+        class="border-b bg-background/80 backdrop-blur-xl sticky top-0 z-50"
+      >
+        <div
+          class="container mx-auto px-6 h-16 flex items-center justify-between"
+        >
+          <div class="flex items-center gap-4">
+            <!-- Hamburger Menu for Portrait -->
+            <button
+              onclick="toggleSideMenu()"
+              class="portrait-only cn-button-ghost h-8 p-1.5 rounded-md"
+            >
+              <i class="iconoir-menu text-xl"></i>
+            </button>
+            <div class="flex items-center gap-2">
+              <div
+                class="h-8 p-1.5 bg-foreground rounded-lg flex items-center justify-center"
+              >
+                <i
+                  class="iconoir-nav-arrow-right text-background text-lg font-bold"
+                ></i>
+              </div>
+              <h1 class="text-lg font-bold tracking-tight">AnTrack</h1>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 sm:gap-4">
+            <div class="flex p-1 bg-muted rounded-lg">
+              <button
+                onclick="setView('grid')"
+                id="gridViewBtn"
+                class="cn-button-ghost h-8 p-1.5 rounded-md active"
+              >
+                <i class="iconoir-view-grid text-base"></i>
+              </button>
+              <button
+                onclick="setView('list')"
+                id="listViewBtn"
+                class="cn-button-ghost h-8 p-1.5 rounded-md"
+              >
+                <i class="iconoir-list text-base"></i>
+              </button>
+            </div>
+            <button
+              onclick="showMyList()"
+              class="cn-button-outline px-4 h-9 flex items-center gap-2 rounded-lg"
+            >
+              <i class="iconoir-bookmark text-base"></i>
+              <span id="myListCount" class="text-sm">0</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Search & Filters Section -->
+      <div class="container mx-auto px-6 py-8">
+        <!-- Unified Section for View Control -->
+        <div
+          id="searchViewSection"
+          class="max-w-4xl mx-auto mb-12 portrait-hidden-state hidden sm:block"
+        >
+          <div
+            class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6"
+          >
+            <div
+              class="flex-1 flex items-center gap-3 px-4 border rounded-lg bg-background focus-within:ring-1 focus-within:ring-ring transition-all group h-10"
+            >
+              <i class="iconoir-search text-muted-foreground text-lg"></i>
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Search anime..."
+                class="flex-1 bg-transparent border-none outline-none focus:ring-0 text-base sm:text-sm p-2"
+              />
+            </div>
+            <div class="flex gap-2">
+              <button
+                onclick="searchAnime()"
+                class="flex-1 sm:flex-none cn-button cn-button-primary h-12 sm:h-11 px-6 rounded-lg flex items-center justify-center gap-2"
+              >
+                <i class="iconoir-nav-arrow-right text-xl"></i>
+                <span class="sm:hidden font-bold">Search</span>
+              </button>
+              <button
+                onclick="toggleFilters()"
+                class="cn-button cn-button-outline h-12 sm:h-11 px-4 rounded-lg flex items-center gap-2"
+              >
+                <i class="iconoir-filter text-base"></i>
+                <span>Filters</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filters Panel -->
+          <div
+            id="filtersPanel"
+            class="hidden mb-6 p-6 border rounded-xl bg-card/50 backdrop-blur-md animate-slide-up"
+          >
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                  >Genre</label
+                >
+                <select id="genreFilter" class="cn-input">
+                  <option value="">All Genres</option>
+                  <option value="Action">Action</option>
+                  <option value="Adventure">Adventure</option>
+                  <option value="Comedy">Comedy</option>
+                  <option value="Drama">Drama</option>
+                  <option value="Fantasy">Fantasy</option>
+                  <option value="Horror">Horror</option>
+                  <option value="Romance">Romance</option>
+                  <option value="Sci-Fi">Sci-Fi</option>
+                  <option value="Sports">Sports</option>
+                  <option value="Supernatural">Supernatural</option>
+                  <option value="Thriller">Thriller</option>
+                </select>
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                  >Year</label
+                >
+                <select id="yearFilter" class="cn-input">
+                  <option value="">All Years</option>
+                  <option value="2025">2025</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                  <option value="2022">2022</option>
+                  <option value="2021">2021</option>
+                </select>
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                  >Format</label
+                >
+                <select id="formatFilter" class="cn-input">
+                  <option value="">All</option>
+                  <option value="TV">TV</option>
+                  <option value="MOVIE">Movie</option>
+                  <option value="OVA">OVA</option>
+                </select>
+              </div>
+              <div class="space-y-2">
+                <label
+                  class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                  >Status</label
+                >
+                <select id="statusFilter" class="cn-input">
+                  <option value="">All</option>
+                  <option value="RELEASING">Airing</option>
+                  <option value="FINISHED">Finished</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 mt-6 pt-6 border-t">
+              <button
+                onclick="applyFilters()"
+                class="cn-button cn-button-primary h-9"
+              >
+                Apply Filters
+              </button>
+              <button
+                onclick="clearFilters()"
+                class="cn-button cn-button-ghost h-9 text-muted-foreground"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs Section -->
+        <div id="homeViewSection" class="flex justify-center mb-8 animate-fade">
+          <div class="cn-tabs overflow-x-auto max-w-full">
+            <button
+              onclick="setActiveTab(this, loadTrending)"
+              class="cn-tabs-trigger active shrink-0"
+            >
+              Trending
+            </button>
+            <button
+              onclick="setActiveTab(this, loadPopular)"
+              class="cn-tabs-trigger shrink-0"
+            >
+              Popular
+            </button>
+            <button
+              onclick="setActiveTab(this, loadTopRated)"
+              class="cn-tabs-trigger shrink-0"
+            >
+              Top Rated
+            </button>
+            <button
+              onclick="setActiveTab(this, loadAiring)"
+              class="cn-tabs-trigger shrink-0"
+            >
+              Airing
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="hidden justify-center items-center py-8">
+          <div class="loading"></div>
+        </div>
+
+        <!-- Results -->
+        <div
+          id="results"
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6"
+        ></div>
+
+        <!-- Load More -->
+        <div id="loadMoreContainer" class="hidden mt-16 text-center">
+          <button
+            onclick="loadMore()"
+            class="cn-button cn-button-outline px-8 h-12 rounded-full text-sm font-semibold"
+          >
+            Load More Content
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal (Shadcn Dialog Style) -->
+    <div
+      id="modal"
+      class="hidden fixed inset-0 z-50 dialog-overlay flex items-center justify-center p-2 sm:p-4"
+      onclick="closeModal(event)"
+    >
+      <div
+        class="max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto bg-card border rounded-xl sm:rounded-2xl shadow-2xl relative"
+        onclick="event.stopPropagation()"
+      >
+        <div
+          class="sticky top-0 bg-card/80 backdrop-blur-xl border-b p-3 sm:p-4 flex items-center justify-between z-30"
+        >
+          <h2 class="text-base font-bold tracking-tight uppercase">
+            Anime Details
+          </h2>
+          <button
+            onclick="closeModal()"
+            class="cn-button-ghost w-8 h-8 p-0 rounded-full flex items-center justify-center"
+          >
+            <i class="iconoir-xmark text-lg"></i>
+          </button>
+        </div>
+        <div id="modalContent" class="p-4 sm:p-8"></div>
+      </div>
+    </div>
+
+    <!-- My List Modal -->
+    <div
+      id="myListModal"
+      class="hidden fixed inset-0 z-50 dialog-overlay flex items-center justify-center p-2 sm:p-4"
+      onclick="closeMyListModal(event)"
+    >
+      <div
+        class="max-w-5xl w-full max-h-[90vh] sm:max-h-[85vh] overflow-y-auto bg-card border rounded-xl sm:rounded-2xl shadow-2xl relative"
+        onclick="event.stopPropagation()"
+      >
+        <div
+          class="sticky top-0 bg-card/80 backdrop-blur-xl border-b p-4 sm:p-6 flex items-center justify-between z-30"
+        >
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold tracking-tight">
+              Saved Anime
+            </h2>
+            <p
+              class="text-[10px] sm:text-sm text-muted-foreground mt-0.5 sm:mt-1"
+            >
+              Your personal watchlist synced locally.
+            </p>
+          </div>
+          <button
+            onclick="closeMyListModal()"
+            class="cn-button-ghost w-8 h-8 sm:w-10 sm:h-10 p-0 rounded-full flex items-center justify-center"
+          >
+            <i class="iconoir-xmark text-lg sm:text-xl"></i>
+          </button>
+        </div>
+        <div class="p-4 sm:p-8">
+          <div
+            id="myListContent"
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Search Overlay -->
+    <div
+      id="mobileSearchOverlay"
+      class="hidden fixed inset-0 z-[60] bg-background/95 backdrop-blur-2xl p-6 flex flex-col animate-fade"
+    >
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-xl font-bold tracking-tight">Search</h2>
+        <button
+          onclick="toggleMobileSearch()"
+          class="cn-button-ghost w-10 h-10 p-0 rounded-full flex items-center justify-center"
+        >
+          <i class="iconoir-xmark text-xl"></i>
+        </button>
+      </div>
+      <div class="space-y-6">
+        <div
+          class="flex items-center gap-3 px-4 border rounded-xl bg-muted/50 focus-within:ring-1 focus-within:ring-ring transition-all group h-14"
+        >
+          <i
+            class="iconoir-search text-muted-foreground text-xl group-focus-within:text-foreground"
+          ></i>
+          <input
+            type="text"
+            id="mobileSearchInput"
+            placeholder="Anime title..."
+            class="flex-1 bg-transparent border-none outline-none focus:ring-0 text-base h-full"
+          />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <button
+            onclick="searchAnime(true)"
+            class="cn-button cn-button-primary h-14 rounded-xl text-base"
+          >
+            Search Now
+          </button>
+          <button
+            onclick="toggleMobileFilters()"
+            class="cn-button cn-button-outline h-14 rounded-xl text-base flex items-center gap-2"
+          >
+            <i class="iconoir-filter"></i>
+            Filters
+          </button>
+        </div>
+
+        <div
+          id="mobileFiltersPanel"
+          class="hidden p-4 border rounded-xl bg-card/50 space-y-4 animate-slide-up"
+        >
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1">
+              <label
+                class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                >Genre</label
+              >
+              <select id="mobileGenreFilter" class="cn-input bg-card"></select>
+            </div>
+            <div class="space-y-1">
+              <label
+                class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                >Year</label
+              >
+              <select id="mobileYearFilter" class="cn-input bg-card"></select>
+            </div>
+          </div>
+          <button
+            onclick="applyFilters(true)"
+            class="cn-button cn-button-primary w-full h-11"
+          >
+            Apply Mobile Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
