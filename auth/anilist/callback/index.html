@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
     <title>AniList Login</title>
   </head>
   <body>
@@ -23,19 +22,12 @@
         })
           .then((res) => res.json())
           .then((data) => {
-            console.log("AniList Token:", data);
-
-            // Save token
             localStorage.setItem("anilist_token", data.access_token);
-            window.history.replaceState(
-              {},
-              document.title,
-              window.location.pathname
-            );
-            document.body.innerHTML = "<h2>Login successful 🎉</h2>";
+
+            // OPTIONAL: redirect back to main app
+            window.location.href = "/antrack/";
           })
-          .catch((err) => {
-            console.error(err);
+          .catch(() => {
             document.body.innerHTML = "<h3>Login failed</h3>";
           });
       }
