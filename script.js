@@ -25,17 +25,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function handlePortraitLayout() {
   const isPortrait = window.matchMedia("(max-width: 639px)").matches;
+
+  // Ignore keyboard-triggered resize when search is open
+  if (isPortrait && isPortraitSearchActive) return;
+
   if (isPortrait) {
-    // By default hide search, show home on portrait load
     switchPortraitTab("home");
   } else {
-    // Reset for desktop
     document.getElementById("searchViewSection").classList.remove("hidden");
     document.getElementById("homeViewSection").classList.remove("hidden");
   }
 }
 
-window.addEventListener("resize", handlePortraitLayout);
+window.addEventListener("resize", () => {
+  requestAnimationFrame(handlePortraitLayout);
+});
 
 function toggleSideMenu() {
   const sideMenu = document.getElementById("sideMenu");
@@ -62,30 +66,39 @@ function switchPortraitTab(tab) {
   const homeSection = document.getElementById("homeViewSection");
   const homeBtn = document.getElementById("portraitHomeBtn");
   const searchBtn = document.getElementById("portraitSearchBtn");
+  const sideMenu = document.getElementById("sideMenu");
+
+  // Update global state FIRST
+  isPortraitSearchActive = tab === "search";
 
   if (tab === "home") {
     searchSection.classList.add("hidden");
     homeSection.classList.remove("hidden");
+
     homeBtn.classList.add("bg-accent", "text-foreground");
     homeBtn.classList.remove("text-muted-foreground");
+
     searchBtn.classList.add("text-muted-foreground");
     searchBtn.classList.remove("bg-accent", "text-foreground");
-    isPortraitSearchActive = false;
   } else {
     homeSection.classList.add("hidden");
     searchSection.classList.remove("hidden", "sm:block");
+
     searchBtn.classList.add("bg-accent", "text-foreground");
     searchBtn.classList.remove("text-muted-foreground");
+
     homeBtn.classList.add("text-muted-foreground");
     homeBtn.classList.remove("bg-accent", "text-foreground");
-    isPortraitSearchActive = true;
-    setTimeout(() => document.getElementById("searchInput").focus(), 100);
+
+    // Focus search input safely (prevents resize race)
+    requestAnimationFrame(() => {
+      const input = document.getElementById("searchInput");
+      if (input) input.focus({ preventScroll: true });
+    });
   }
 
-  // Close menu after selection
-  if (
-    !document.getElementById("sideMenu").classList.contains("-translate-x-full")
-  ) {
+  // Close side menu if open
+  if (sideMenu && !sideMenu.classList.contains("-translate-x-full")) {
     toggleSideMenu();
   }
 }
@@ -911,4 +924,19 @@ function setActiveTab(button, loadFunction) {
   });
   button.classList.add("active");
   loadFunction();
+}
+
+const portraitSearchBtn = document.getElementById("portraitSearchBtn");
+const portraitHomeBtn = document.getElementById("portraitHomeBtn");
+
+if (portraitSearchBtn) {
+  portraitSearchBtn.addEventListener("click", () => {
+    switchPortraitTab("search");
+  });
+}
+
+if (portraitHomeBtn) {
+  portraitHomeBtn.addEventListener("click", () => {
+    switchPortraitTab("home");
+  });
 }
