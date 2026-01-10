@@ -27,7 +27,11 @@
 
             // Save token
             localStorage.setItem("anilist_token", data.access_token);
-
+            window.history.replaceState(
+              {},
+              document.title,
+              window.location.pathname
+            );
             document.body.innerHTML = "<h2>Login successful 🎉</h2>";
           })
           .catch((err) => {
