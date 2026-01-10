@@ -41,6 +41,7 @@ body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   min-height: 100vh;
+  min-height: 100svh;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -270,3 +271,4 @@ select.cn-input {
 *::-webkit-scrollbar {
   display: none;
 }
+
